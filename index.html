@@ -838,7 +838,7 @@
     </nav>
     <p class="footer-copy">
       FIFA World Cup 2026 Live Scores &amp; Standings ·
-      Data via <a href="https://github.com/openfootball/worldcup.json" target="_blank" rel="noopener">OpenFootball</a> ·
+      Data via <a href="https://worldcup26.ir" target="_blank" rel="noopener">WorldCup26.ir</a> ·
       Built by <a href="https://arslanbutt300.github.io/portfolio/" target="_blank" rel="noopener">Arslan Ahmad</a> ·
       <a href="https://apps.apple.com/app/footsteps" target="_blank" rel="noopener">FootSteps iOS App</a>
     </p>
@@ -846,7 +846,8 @@
 </footer>
 
 <script>
-const DATA_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+const API_GAMES    = 'https://worldcup26.ir/get/games';
+const API_STADIUMS = 'https://worldcup26.ir/get/stadiums';
 
 const FLAGS = {
   'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czech Republic':'🇨🇿',
@@ -864,6 +865,57 @@ const FLAGS = {
 };
 
 function flag(team) { return FLAGS[team] || '🏳'; }
+
+// Parse "MM/DD/YYYY HH:MM" → {dateStr:"YYYY-MM-DD", timeStr:"HH:MM"}
+function parseLocalDate(localDate) {
+  if (!localDate) return { dateStr: null, timeStr: null };
+  const [datePart, timePart] = localDate.split(' ');
+  const [mm, dd, yyyy] = datePart.split('/');
+  return { dateStr: `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`, timeStr: timePart || null };
+}
+
+// Parse PHP-style scorer set: {"Name 45'","Name2 90'"} → [{name, minute}]
+function parseScorers(raw) {
+  if (!raw || raw === 'null' || raw === '{}') return [];
+  const result = [];
+  const re = /"([^"]+)"/g;
+  let m;
+  while ((m = re.exec(raw)) !== null) {
+    const entry = m[1].trim();
+    const mm = entry.match(/^(.+?)\s+(\d+(?:\+\d+)?)'?$/);
+    if (mm) result.push({ name: mm[1].trim(), minute: mm[2] });
+    else result.push({ name: entry, minute: '?' });
+  }
+  return result;
+}
+
+// Normalize worldcup26.ir game object to the internal match format
+function normalizeGame(g, stadiumsMap) {
+  const { dateStr, timeStr } = parseLocalDate(g.local_date);
+  const finished = g.finished === 'TRUE';
+  const te = g.time_elapsed;
+  const isLive = !finished && te && te !== 'notstarted' && te !== 'finished';
+  const stadium = stadiumsMap[g.stadium_id];
+
+  const norm = {
+    team1: g.home_team_name_en,
+    team2: g.away_team_name_en,
+    date: dateStr,
+    time: timeStr,
+    ground: stadium ? `${stadium.name_en}, ${stadium.city_en}` : null,
+    group: g.type === 'group' ? `Group ${g.group}` : null,
+    status: finished ? 'finished' : (isLive ? 'live' : 'upcoming'),
+    liveMinute: isLive ? te : null,
+    goals1: parseScorers(g.home_scorers),
+    goals2: parseScorers(g.away_scorers),
+  };
+
+  if (finished || isLive) {
+    norm.score = { ft: [parseInt(g.home_score) || 0, parseInt(g.away_score) || 0] };
+  }
+
+  return norm;
+}
 
 function formatDate(dateStr) {
   const d = new Date(dateStr + 'T12:00:00Z');
@@ -884,15 +936,13 @@ function isPast(dateStr) {
   return d < today;
 }
 
-function parseMatchTime(dateStr, timeStr) {
-  if (!timeStr) return new Date(dateStr + 'T18:00:00Z');
-  const m = timeStr.match(/^(\d{1,2}):(\d{2})\s*UTC([+-]\d+)/);
-  if (!m) return new Date(dateStr + 'T18:00:00Z');
-  const localH = parseInt(m[1]);
-  const localMin = parseInt(m[2]);
-  const offset = parseInt(m[3]);
-  const utcH = ((localH - offset) % 24 + 24) % 24;
-  return new Date(`${dateStr}T${String(utcH).padStart(2,'0')}:${String(localMin).padStart(2,'0')}:00Z`);
+function parseMatchTimeUTC(dateStr, timeStr) {
+  if (!dateStr) return new Date(Date.now() + 86400000);
+  if (!timeStr) return new Date(dateStr + 'T23:00:00Z');
+  const [h, min] = timeStr.split(':').map(Number);
+  // worldcup26.ir local_date is in local stadium time; approx CDT (UTC-5) for most venues
+  const utcH = (h + 5) % 24;
+  return new Date(`${dateStr}T${String(utcH).padStart(2,'0')}:${String(min).padStart(2,'0')}:00Z`);
 }
 
 let allMatches = [];
@@ -911,18 +961,17 @@ function renderMatches(matches) {
 
   let html = '';
   matches.forEach(m => {
+    const isLive = m.liveMinute != null;
     const hasScore = m.score && m.score.ft;
     const today = isToday(m.date);
-    const cardClass = hasScore ? 'completed' : (today ? 'live-match' : 'upcoming');
-    const statusLabel = hasScore ? 'FT' : (today ? 'TODAY' : formatDate(m.date));
-    const statusClass = hasScore ? 'status-ft' : (today ? 'status-live' : 'status-upcoming');
+    const cardClass = isLive ? 'live-match' : (hasScore ? 'completed' : (today ? 'live-match' : 'upcoming'));
+    const statusLabel = isLive ? `🔴 ${m.liveMinute}'` : (hasScore ? 'FT' : (today ? 'TODAY' : formatDate(m.date)));
+    const statusClass = isLive ? 'status-live' : (hasScore ? 'status-ft' : 'status-upcoming');
 
     let scoreHtml = '';
     if (hasScore) {
-      const ht = m.score.ht ? `HT ${m.score.ht[0]}-${m.score.ht[1]}` : '';
       scoreHtml = `<div class="score-box">
         <div class="score-value">${m.score.ft[0]} – ${m.score.ft[1]}</div>
-        ${ht ? `<div class="score-ht">${ht}</div>` : ''}
       </div>`;
     } else {
       scoreHtml = `<div class="score-box"><div class="score-vs">vs</div></div>`;
@@ -1028,7 +1077,7 @@ function renderStandings(matches) {
 
 /* ── NEXT MATCHES ── */
 function renderNextMatches(matches) {
-  const upcoming = matches.filter(m => !m.score).slice(0, 5);
+  const upcoming = matches.filter(m => m.status === 'upcoming').slice(0, 5);
   const container = document.getElementById('next-matches');
   if (!upcoming.length) {
     container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0;">No upcoming matches found.</div>';
@@ -1101,7 +1150,7 @@ function startCountdown(match) {
   const bar = document.getElementById('countdown-bar');
   if (!match) { bar.style.display = 'none'; return; }
 
-  countdownMatchTarget = parseMatchTime(match.date, match.time);
+  countdownMatchTarget = parseMatchTimeUTC(match.date, match.time);
 
   document.getElementById('cd-teams').textContent =
     `${flag(match.team1)} ${match.team1}  vs  ${match.team2} ${flag(match.team2)}`;
@@ -1200,10 +1249,27 @@ function injectMatchSchema(matches) {
 /* ── LOAD DATA ── */
 async function loadData() {
   try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    allMatches = data.matches || [];
+    const bust = '?t=' + Date.now();
+    const [gamesRes, stadiumsRes] = await Promise.all([
+      fetch(API_GAMES + bust),
+      fetch(API_STADIUMS)
+    ]);
+
+    if (!gamesRes.ok) throw new Error('Games API HTTP ' + gamesRes.status);
+    const gamesData = await gamesRes.json();
+
+    const stadiumsMap = {};
+    if (stadiumsRes.ok) {
+      const sd = await stadiumsRes.json();
+      const list = Array.isArray(sd) ? sd : (sd.stadiums || []);
+      list.forEach(s => { stadiumsMap[s.id] = s; });
+    }
+
+    const raw = Array.isArray(gamesData) ? gamesData : (gamesData.games || []);
+    allMatches = raw
+      .map(g => normalizeGame(g, stadiumsMap))
+      .filter(m => m.team1 && m.team2 && m.date)
+      .sort((a, b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.time || '') < (b.time || '') ? -1 : 1);
 
     applyFilters();
     renderStandings(allMatches);
@@ -1211,20 +1277,20 @@ async function loadData() {
     renderTopScorers(allMatches);
     updateStats(allMatches);
 
-    const nextMatch = allMatches.find(m => !m.score);
+    const nextMatch = allMatches.find(m => m.status === 'upcoming');
     startCountdown(nextMatch);
     injectMatchSchema(allMatches);
 
   } catch(err) {
     document.getElementById('matches-container').innerHTML =
-      '<div class="loading">⚠ Could not load match data. <button onclick="loadData()" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:inherit;">Retry</button></div>';
+      '<div class="loading">⚠ Could not load live data. <button onclick="loadData()" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:inherit;">Retry</button></div>';
     document.getElementById('standings-container').innerHTML = '';
     console.error('WorldCup26 data load error:', err);
   }
 }
 
 loadData();
-setInterval(loadData, 300000); // refresh every 5 minutes
+setInterval(loadData, 60000); // refresh every 60 seconds
 </script>
 
 </body>

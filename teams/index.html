@@ -116,7 +116,9 @@
 </footer>
 
 <script>
-const DATA_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+const API_GAMES    = 'https://worldcup26.ir/get/games';
+const API_STADIUMS = 'https://worldcup26.ir/get/stadiums';
+
 const FLAGS = {
   'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czech Republic':'🇨🇿',
   'Canada':'🇨🇦','Bosnia & Herzegovina':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭',
@@ -134,29 +136,34 @@ function flag(t) { return FLAGS[t] || '🏳'; }
 async function loadData() {
   const content = document.getElementById('main-content');
   try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now());
-    const data = await res.json();
-    const matches = data.matches || [];
+    const [gamesRes] = await Promise.all([
+      fetch(API_GAMES + '?t=' + Date.now())
+    ]);
+    if (!gamesRes.ok) throw new Error('HTTP ' + gamesRes.status);
+    const gamesData = await gamesRes.json();
+    const raw = Array.isArray(gamesData) ? gamesData : (gamesData.games || []);
 
-    // Build groups
     const groups = {};
     const standings = {};
-    matches.filter(m => m.group).forEach(m => {
-      if (!groups[m.group]) groups[m.group] = new Set();
-      groups[m.group].add(m.team1);
-      groups[m.group].add(m.team2);
 
-      if (m.score && m.score.ft) {
-        [m.team1, m.team2].forEach(t => {
+    raw.filter(g => g.type === 'group').forEach(g => {
+      const groupKey = `Group ${g.group}`;
+      if (!groups[groupKey]) groups[groupKey] = new Set();
+      groups[groupKey].add(g.home_team_name_en);
+      groups[groupKey].add(g.away_team_name_en);
+
+      if (g.finished === 'TRUE') {
+        const s1 = parseInt(g.home_score) || 0;
+        const s2 = parseInt(g.away_score) || 0;
+        [g.home_team_name_en, g.away_team_name_en].forEach(t => {
           if (!standings[t]) standings[t] = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 };
         });
-        const [g1, g2] = m.score.ft;
-        const s1 = standings[m.team1], s2 = standings[m.team2];
-        s1.p++; s2.p++;
-        s1.gf += g1; s1.ga += g2; s2.gf += g2; s2.ga += g1;
-        if (g1 > g2) { s1.w++; s1.pts+=3; s2.l++; }
-        else if (g1 < g2) { s2.w++; s2.pts+=3; s1.l++; }
-        else { s1.d++; s1.pts++; s2.d++; s2.pts++; }
+        const t1 = standings[g.home_team_name_en], t2 = standings[g.away_team_name_en];
+        t1.p++; t2.p++;
+        t1.gf += s1; t1.ga += s2; t2.gf += s2; t2.ga += s1;
+        if (s1 > s2) { t1.w++; t1.pts+=3; t2.l++; }
+        else if (s1 < s2) { t2.w++; t2.pts+=3; t1.l++; }
+        else { t1.d++; t1.pts++; t2.d++; t2.pts++; }
       }
     });
 
@@ -183,9 +190,11 @@ async function loadData() {
     content.innerHTML = html || '<div class="loading">No team data available yet.</div>';
   } catch(err) {
     content.innerHTML = '<div class="loading">⚠ Could not load team data. <button onclick="loadData()" style="color:var(--accent);background:none;border:none;cursor:pointer;">Retry</button></div>';
+    console.error('WorldCup26 teams load error:', err);
   }
 }
 loadData();
+setInterval(loadData, 60000);
 </script>
 </body>
 </html>
