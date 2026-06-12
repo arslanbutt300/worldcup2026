@@ -140,6 +140,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: hidden; }
 
   body {
     background: var(--bg);
@@ -701,18 +702,18 @@
   .star-stat { font-size:11px; font-weight:800; color:var(--accent); background:rgba(34,197,94,.12); padding:2px 10px; border-radius:10px; position:relative; display:inline-block; min-width:48px; }
 
   /* ── LIVE NOW BANNER ── */
-  .live-now-bar { background:linear-gradient(90deg,#1a0000,#0d0606 60%,#0a0e1a); border-bottom:2px solid rgba(239,68,68,.35); }
-  .lnb-inner { max-width:1100px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .lnb-pill { background:#ef4444; color:#fff; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; flex-shrink:0; animation:livePulse 1.5s ease-in-out infinite; }
+  .live-now-bar { background:linear-gradient(90deg,#1a0000,#0d0606 60%,#0a0e1a); border-bottom:2px solid rgba(239,68,68,.35); overflow:hidden; width:100%; }
+  .lnb-inner { max-width:1100px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .lnb-pill { background:#ef4444; color:#fff; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:20px; flex-shrink:0; animation:livePulse 1.5s ease-in-out infinite; }
   @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.5);} 50%{opacity:.85;box-shadow:0 0 0 6px rgba(239,68,68,0);} }
-  .lnb-match { display:flex; align-items:center; gap:14px; flex:1; justify-content:center; min-width:0; }
-  .lnb-team { font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .lnb-score { font-size:28px; font-weight:800; color:var(--accent); background:var(--card); padding:5px 16px; border-radius:8px; border:1px solid rgba(34,197,94,.25); letter-spacing:3px; flex-shrink:0; }
-  .lnb-meta { font-size:11px; color:var(--text3); flex-shrink:0; }
-  .lnb-scorers { width:100%; display:flex; gap:20px; font-size:11px; color:var(--text3); margin-top:2px; padding:0 2px; }
+  .lnb-match { display:flex; align-items:center; gap:10px; flex:1; justify-content:center; min-width:0; }
+  .lnb-team { font-size:14px; font-weight:700; min-width:0; flex:1; text-align:center; }
+  .lnb-score { font-size:26px; font-weight:800; color:var(--accent); background:var(--card); padding:5px 14px; border-radius:8px; border:1px solid rgba(34,197,94,.25); letter-spacing:3px; flex-shrink:0; }
+  .lnb-clock { font-size:12px; color:#ef4444; font-weight:700; flex-shrink:0; background:rgba(239,68,68,.12); padding:3px 8px; border-radius:12px; border:1px solid rgba(239,68,68,.25); }
+  .lnb-scorers { width:100%; display:flex; gap:16px; font-size:11px; color:var(--text3); margin-top:2px; padding:0 2px; }
   .lnb-scorers-home { flex:1; text-align:right; }
   .lnb-scorers-away { flex:1; }
-  @media (max-width:480px) { .lnb-team { font-size:13px; } .lnb-score { font-size:22px; padding:4px 10px; letter-spacing:2px; } }
+  @media (max-width:480px) { .lnb-team { font-size:13px; } .lnb-score { font-size:20px; padding:4px 10px; letter-spacing:2px; } .lnb-inner { padding:8px 12px; } }
 
   /* ── LATEST GOALS STRIP ── */
   .lgs-bar { background:#070c14; border-bottom:1px solid rgba(255,255,255,.07); padding:9px 0; }
@@ -1682,12 +1683,17 @@ function renderAllGoals(matches) {
 }
 
 /* ── LIVE NOW BANNER ── */
+let liveTimerInterval = null;
+
 function renderLiveBanner(matches) {
   const bar = document.getElementById('live-now-bar');
   const cdBar = document.getElementById('countdown-bar');
   const liveMatches = matches.filter(m => m.status === 'live');
+
+  if (liveTimerInterval) { clearInterval(liveTimerInterval); liveTimerInterval = null; }
   if (!liveMatches.length) { bar.style.display = 'none'; return false; }
 
+  const fetchedAt = Date.now();
   let html = '<div class="lnb-inner">';
   html += '<span class="lnb-pill">🔴 LIVE</span>';
 
@@ -1696,12 +1702,16 @@ function renderLiveBanner(matches) {
     const a = m.score && m.score.ft ? m.score.ft[1] : 0;
     const hScorers = (m.goals1 || []).map(g => g.name + ' ' + g.minute + "'").join(' · ') || '';
     const aScorers = (m.goals2 || []).map(g => g.name + ' ' + g.minute + "'").join(' · ') || '';
+    const numMin = parseInt(m.liveMinute);
+    const hasMin = !isNaN(numMin) && numMin > 0;
+    const minLabel = hasMin ? numMin + "'" : 'LIVE';
+
     html += '<div class="lnb-match">';
     html += '<span class="lnb-team">' + m.team1 + '</span>';
     html += '<span class="lnb-score">' + h + ' – ' + a + '</span>';
     html += '<span class="lnb-team">' + m.team2 + '</span>';
     html += '</div>';
-    html += '<span class="lnb-meta">' + m.liveMinute + "'</span>";
+    html += '<span class="lnb-clock" data-base="' + (hasMin ? numMin : 0) + '" data-at="' + fetchedAt + '">' + minLabel + '</span>';
     if (hScorers || aScorers) {
       html += '<div class="lnb-scorers">';
       html += '<span class="lnb-scorers-home">' + hScorers + '</span>';
@@ -1714,6 +1724,16 @@ function renderLiveBanner(matches) {
   bar.innerHTML = html;
   bar.style.display = 'block';
   if (cdBar) cdBar.style.display = 'none';
+
+  liveTimerInterval = setInterval(() => {
+    document.querySelectorAll('.lnb-clock').forEach(el => {
+      const base = parseInt(el.dataset.base);
+      if (!base) return;
+      const elapsed = Math.floor((Date.now() - parseInt(el.dataset.at)) / 60000);
+      el.textContent = Math.min(120, base + elapsed) + "'";
+    });
+  }, 15000);
+
   return true;
 }
 
