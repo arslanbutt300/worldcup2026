@@ -700,6 +700,32 @@
   .star-club { font-size:10px; color:var(--text3); position:relative; margin-bottom:8px; }
   .star-stat { font-size:11px; font-weight:800; color:var(--accent); background:rgba(34,197,94,.12); padding:2px 10px; border-radius:10px; position:relative; display:inline-block; min-width:48px; }
 
+  /* ── LIVE NOW BANNER ── */
+  .live-now-bar { background:linear-gradient(90deg,#1a0000,#0d0606 60%,#0a0e1a); border-bottom:2px solid rgba(239,68,68,.35); }
+  .lnb-inner { max-width:1100px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .lnb-pill { background:#ef4444; color:#fff; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; flex-shrink:0; animation:livePulse 1.5s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.5);} 50%{opacity:.85;box-shadow:0 0 0 6px rgba(239,68,68,0);} }
+  .lnb-match { display:flex; align-items:center; gap:14px; flex:1; justify-content:center; min-width:0; }
+  .lnb-team { font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lnb-score { font-size:28px; font-weight:800; color:var(--accent); background:var(--card); padding:5px 16px; border-radius:8px; border:1px solid rgba(34,197,94,.25); letter-spacing:3px; flex-shrink:0; }
+  .lnb-meta { font-size:11px; color:var(--text3); flex-shrink:0; }
+  .lnb-scorers { width:100%; display:flex; gap:20px; font-size:11px; color:var(--text3); margin-top:2px; padding:0 2px; }
+  .lnb-scorers-home { flex:1; text-align:right; }
+  .lnb-scorers-away { flex:1; }
+  @media (max-width:480px) { .lnb-team { font-size:13px; } .lnb-score { font-size:22px; padding:4px 10px; letter-spacing:2px; } }
+
+  /* ── LATEST GOALS STRIP ── */
+  .lgs-bar { background:#070c14; border-bottom:1px solid rgba(255,255,255,.07); padding:9px 0; }
+  .lgs-inner { max-width:1160px; margin:0 auto; padding:0 20px; display:flex; align-items:center; gap:12px; min-width:0; }
+  .lgs-label { font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); flex-shrink:0; white-space:nowrap; }
+  .lgs-scroll { display:flex; gap:8px; overflow-x:auto; flex:1; scrollbar-width:none; -webkit-overflow-scrolling:touch; min-width:0; }
+  .lgs-scroll::-webkit-scrollbar { display:none; }
+  .lgs-pill { flex-shrink:0; background:var(--card); border:1px solid rgba(255,255,255,.07); border-radius:20px; padding:4px 12px; font-size:11px; white-space:nowrap; display:flex; align-items:center; gap:4px; }
+  .lgs-pill.live-goal { border-color:rgba(239,68,68,.3); background:rgba(239,68,68,.08); }
+  .lgs-scorer { font-weight:700; color:var(--text); }
+  .lgs-min { color:var(--accent); font-weight:800; font-size:10px; }
+  .lgs-match { color:var(--text3); font-size:10px; }
+
   /* ── GOAL HIGHLIGHTS BAR ── */
   .goal-highlights-bar { display:flex; align-items:center; gap:16px; background:#0d0505; border-bottom:1px solid rgba(239,68,68,.18); padding:13px 20px; text-decoration:none; color:var(--text); transition:background .2s; }
   .goal-highlights-bar:hover { background:#140808; }
@@ -854,6 +880,9 @@
   </div>
 </div>
 
+<!-- ── LIVE NOW BANNER ── -->
+<div class="live-now-bar" id="live-now-bar" style="display:none;" role="region" aria-label="Live match in progress" aria-live="polite"></div>
+
 <!-- ── STARS TO WATCH ── -->
 <section class="stars-section" aria-label="Star players to watch at FIFA World Cup 2026">
   <div class="stars-inner">
@@ -948,6 +977,14 @@
     <div class="gh-cta">Watch Now →</div>
   </div>
 </a>
+
+<!-- ── LATEST GOALS STRIP ── -->
+<div class="lgs-bar" id="lgs-bar" style="display:none;">
+  <div class="lgs-inner">
+    <span class="lgs-label">⚽ Goals</span>
+    <div class="lgs-scroll" id="lgs-scroll"></div>
+  </div>
+</div>
 
 <div class="layout">
 
@@ -1644,6 +1681,75 @@ function renderAllGoals(matches) {
   container.innerHTML = html;
 }
 
+/* ── LIVE NOW BANNER ── */
+function renderLiveBanner(matches) {
+  const bar = document.getElementById('live-now-bar');
+  const cdBar = document.getElementById('countdown-bar');
+  const liveMatches = matches.filter(m => m.status === 'live');
+  if (!liveMatches.length) { bar.style.display = 'none'; return false; }
+
+  let html = '<div class="lnb-inner">';
+  html += '<span class="lnb-pill">🔴 LIVE</span>';
+
+  liveMatches.slice(0, 2).forEach(m => {
+    const h = m.score && m.score.ft ? m.score.ft[0] : 0;
+    const a = m.score && m.score.ft ? m.score.ft[1] : 0;
+    const hScorers = (m.goals1 || []).map(g => g.name + ' ' + g.minute + "'").join(' · ') || '';
+    const aScorers = (m.goals2 || []).map(g => g.name + ' ' + g.minute + "'").join(' · ') || '';
+    html += '<div class="lnb-match">';
+    html += '<span class="lnb-team">' + m.team1 + '</span>';
+    html += '<span class="lnb-score">' + h + ' – ' + a + '</span>';
+    html += '<span class="lnb-team">' + m.team2 + '</span>';
+    html += '</div>';
+    html += '<span class="lnb-meta">' + m.liveMinute + "'</span>";
+    if (hScorers || aScorers) {
+      html += '<div class="lnb-scorers">';
+      html += '<span class="lnb-scorers-home">' + hScorers + '</span>';
+      html += '<span class="lnb-scorers-away">' + aScorers + '</span>';
+      html += '</div>';
+    }
+  });
+
+  html += '</div>';
+  bar.innerHTML = html;
+  bar.style.display = 'block';
+  if (cdBar) cdBar.style.display = 'none';
+  return true;
+}
+
+/* ── LATEST GOALS STRIP ── */
+function renderLatestGoals(matches) {
+  const bar = document.getElementById('lgs-bar');
+  const scroll = document.getElementById('lgs-scroll');
+  const allGoals = [];
+
+  matches.forEach(m => {
+    if (m.status !== 'finished' && m.status !== 'live') return;
+    const isLive = m.status === 'live';
+    (m.goals1 || []).forEach(g => allGoals.push({ scorer: g.name, minute: g.minute, home: m.team1, away: m.team2, isLive }));
+    (m.goals2 || []).forEach(g => allGoals.push({ scorer: g.name, minute: g.minute, home: m.team1, away: m.team2, isLive }));
+  });
+
+  if (!allGoals.length) { bar.style.display = 'none'; return; }
+
+  allGoals.sort((a, b) => {
+    if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+    const am = parseInt(a.minute) || 0;
+    const bm = parseInt(b.minute) || 0;
+    return bm - am;
+  });
+
+  scroll.innerHTML = allGoals.slice(0, 20).map(g =>
+    '<div class="lgs-pill' + (g.isLive ? ' live-goal' : '') + '">' +
+    '<span class="lgs-scorer">' + g.scorer + '</span>' +
+    '<span class="lgs-min"> ' + g.minute + "'</span>" +
+    '<span class="lgs-match"> · ' + g.home + ' v ' + g.away + '</span>' +
+    '</div>'
+  ).join('');
+
+  bar.style.display = 'block';
+}
+
 /* ── LOAD DATA ── */
 async function loadData() {
   try {
@@ -1678,9 +1784,13 @@ async function loadData() {
     initMiniStandings();
     updateStarGoals(allMatches);
     renderAllGoals(allMatches);
+    renderLatestGoals(allMatches);
+    const hasLive = renderLiveBanner(allMatches);
 
-    const nextMatch = allMatches.find(m => m.status === 'upcoming');
-    startCountdown(nextMatch);
+    if (!hasLive) {
+      const nextMatch = allMatches.find(m => m.status === 'upcoming');
+      startCountdown(nextMatch);
+    }
     injectMatchSchema(allMatches);
 
   } catch(err) {
