@@ -748,6 +748,44 @@
     .mobile-tabbar { display:flex; }
     body { padding-bottom:calc(54px + env(safe-area-inset-bottom,0px)); }
   }
+
+  /* ── MOBILE LAYOUT FIXES ── */
+  @media (max-width:768px) {
+    /* Match results first — sidebar below on mobile */
+    .sidebar { order:1; }
+
+    /* Group filter tabs: horizontal scroll instead of ugly multi-line wrap */
+    .group-tabs-row {
+      overflow-x:auto;
+      flex-wrap:nowrap;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      padding-bottom:6px;
+    }
+    .group-tabs-row::-webkit-scrollbar { display:none; }
+    .group-tabs-row .filter-tab { flex-shrink:0; }
+
+    /* Stars: hide subtitle on mobile */
+    .stars-sub { display:none; }
+
+    /* Leaderboard ad: shorter placeholder on mobile */
+    .leaderboard-ad { min-height:50px; }
+
+    /* Goal highlights bar: tighter */
+    .goal-highlights-bar { padding:10px 16px; }
+  }
+
+  @media (max-width:480px) {
+    /* Tighter layout on small phones */
+    .stars-inner { padding:0 14px; }
+    .layout { padding:16px 14px; }
+    .hero-stat { font-size:11px; padding:4px 10px; }
+    .team-name { font-size:13px; }
+    .score-value { font-size:18px; }
+    /* Bottom tab labels slightly bigger */
+    .mtb-btn { font-size:10px; }
+    .mtb-icon { font-size:20px; }
+  }
 </style>
 </head>
 <body>
