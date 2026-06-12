@@ -140,6 +140,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-x: hidden; }
 
   body {
     background: var(--bg);
@@ -766,7 +767,7 @@
 
   /* ── MOBILE BOTTOM TAB BAR ── */
   .mobile-tabbar { display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(10,14,26,.96); border-top:1px solid rgba(255,255,255,.08); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); z-index:300; padding-bottom:env(safe-area-inset-bottom,0px); }
-  .mtb-inner { display:flex; height:54px; }
+  .mtb-inner { display:flex; height:54px; width:100%; }
   .mtb-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; text-decoration:none; color:rgba(255,255,255,.38); font-size:9px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; transition:color .15s; border:none; background:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .mtb-btn.active,.mtb-btn:hover { color:var(--accent); }
   .mtb-icon { font-size:19px; line-height:1; }
