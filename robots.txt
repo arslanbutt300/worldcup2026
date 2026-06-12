@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block low-value paths from crawl budget
+Disallow: /assets/
+Disallow: /*.json$
+
+# Sitemaps
+Sitemap: https://arslanbutt300.github.io/worldcup2026/sitemap.xml

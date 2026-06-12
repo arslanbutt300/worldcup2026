@@ -1,0 +1,60 @@
+{
+  "name": "FIFA World Cup 2026 — Live Scores & Standings",
+  "short_name": "WorldCup26",
+  "description": "Live scores, results, group standings and fixtures for FIFA World Cup 2026. All 104 matches.",
+  "start_url": "/worldcup2026/",
+  "scope": "/worldcup2026/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "news"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/worldcup2026/assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/worldcup2026/assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/worldcup2026/assets/images/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "FIFA World Cup 2026 live scores — desktop view"
+    },
+    {
+      "src": "/worldcup2026/assets/images/screenshot-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FIFA World Cup 2026 live scores — mobile view"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Scores",
+      "short_name": "Scores",
+      "description": "View latest match scores",
+      "url": "/worldcup2026/#results",
+      "icons": [{ "src": "/worldcup2026/assets/images/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Group Standings",
+      "short_name": "Standings",
+      "description": "View all 12 group standings",
+      "url": "/worldcup2026/#standings",
+      "icons": [{ "src": "/worldcup2026/assets/images/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
