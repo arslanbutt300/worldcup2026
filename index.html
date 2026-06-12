@@ -688,14 +688,28 @@
   .stars-sub { font-size:11px; color:var(--text3); margin-left:auto; }
   .stars-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
   .stars-scroll::-webkit-scrollbar { display:none; }
-  .star-card { flex-shrink:0; width:108px; border-radius:12px; padding:14px 10px 12px; text-align:center; position:relative; overflow:hidden; cursor:default; transition:transform .2s,box-shadow .2s; background:var(--card); border:1px solid rgba(255,255,255,.06); }
+  .star-card { flex-shrink:0; width:120px; border-radius:12px; padding:14px 10px 12px; text-align:center; position:relative; overflow:hidden; cursor:default; transition:transform .2s,box-shadow .2s; background:var(--card); border:1px solid rgba(255,255,255,.06); }
   .star-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.5); }
   .star-card::before { content:''; position:absolute; top:0;left:0;right:0; height:44px; background:var(--tc,#22c55e); opacity:.2; border-radius:11px 11px 60% 60%; }
-  .star-flag-big { font-size:30px; margin-bottom:4px; position:relative; line-height:1.1; }
+  .star-flag-big { display:none; }
+  .star-photo-wrap { width:68px; height:68px; margin:0 auto 8px; position:relative; z-index:1; }
+  .star-flag-back { width:68px; height:68px; border-radius:50%; background:rgba(255,255,255,.06); border:2.5px solid var(--tc,rgba(255,255,255,.15)); display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .star-photo { width:68px; height:68px; border-radius:50%; object-fit:cover; object-position:center top; position:absolute; top:0; left:0; border:2.5px solid var(--tc,rgba(255,255,255,.2)); background:var(--card); }
   .star-num { font-size:9px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.3); position:relative; margin-bottom:3px; }
   .star-name { font-size:12px; font-weight:800; color:var(--text); position:relative; line-height:1.25; margin-bottom:2px; }
   .star-club { font-size:10px; color:var(--text3); position:relative; margin-bottom:8px; }
   .star-stat { font-size:11px; font-weight:800; color:var(--accent); background:rgba(34,197,94,.12); padding:2px 10px; border-radius:10px; position:relative; display:inline-block; min-width:48px; }
+
+  /* ── GOAL HIGHLIGHTS BAR ── */
+  .goal-highlights-bar { display:flex; align-items:center; gap:16px; background:#0d0505; border-bottom:1px solid rgba(239,68,68,.18); padding:13px 20px; text-decoration:none; color:var(--text); transition:background .2s; }
+  .goal-highlights-bar:hover { background:#140808; }
+  .gh-inner { max-width:1160px; margin:0 auto; width:100%; }
+  .gh-play-icon { width:42px; height:42px; border-radius:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; color:#fff; font-weight:700; }
+  .gh-text { flex:1; min-width:0; }
+  .gh-eyebrow { font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#ef4444; margin-bottom:3px; }
+  .gh-body { font-size:13px; font-weight:600; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gh-cta { background:#ef4444; color:#fff; padding:7px 14px; border-radius:8px; font-size:11px; font-weight:800; flex-shrink:0; letter-spacing:.03em; }
+  @media (max-width:480px) { .gh-cta { display:none; } }
 
   /* ── LEADERBOARD AD ── */
   .leaderboard-ad { margin:8px 0 12px; border-radius:8px; overflow:hidden; background:var(--card); border:1px dashed rgba(255,255,255,.08); min-height:90px; display:flex; align-items:center; justify-content:center; }
@@ -796,82 +810,94 @@
     <div class="stars-heading">
       <span class="stars-badge">⭐ Stars to Watch</span>
       <span class="stars-title">WC2026 Key Players</span>
-      <span class="stars-sub">Goals from live data</span>
+      <span class="stars-sub">Goals updated live · Swipe →</span>
     </div>
     <div class="stars-scroll">
       <div class="star-card" style="--tc:#74ACDF">
-        <div class="star-flag-big">🇦🇷</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇦🇷</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lionel_Messi_20180626.jpg&width=200" alt="L. Messi" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#10 · ARG</div>
         <div class="star-name">L. Messi</div>
         <div class="star-club">Argentina</div>
-        <div class="star-stat" id="sg-messi">— ⚽</div>
+        <div class="star-stat" id="sg-messi">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#002395">
-        <div class="star-flag-big">🇫🇷</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇫🇷</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Kylian_Mbapp%C3%A9.jpg&width=200" alt="K. Mbappé" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#10 · FRA</div>
         <div class="star-name">K. Mbappé</div>
         <div class="star-club">France</div>
-        <div class="star-stat" id="sg-mbappe">— ⚽</div>
+        <div class="star-stat" id="sg-mbappe">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#009C3B">
-        <div class="star-flag-big">🇧🇷</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇧🇷</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Vinicius_Junior_2022.jpg&width=200" alt="Vinicius Jr" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#7 · BRA</div>
         <div class="star-name">Vinicius Jr</div>
         <div class="star-club">Brazil</div>
-        <div class="star-stat" id="sg-vini">— ⚽</div>
+        <div class="star-stat" id="sg-vini">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#EF2B2D">
-        <div class="star-flag-big">🇳🇴</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇳🇴</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Erling_Haaland_2022.jpg&width=200" alt="E. Haaland" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#9 · NOR</div>
         <div class="star-name">E. Haaland</div>
         <div class="star-club">Norway</div>
-        <div class="star-stat" id="sg-haaland">— ⚽</div>
+        <div class="star-stat" id="sg-haaland">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#AA151B">
-        <div class="star-flag-big">🇪🇸</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇪🇸</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Lamine_Yamal_2024.jpg&width=200" alt="L. Yamal" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#19 · ESP</div>
         <div class="star-name">L. Yamal</div>
         <div class="star-club">Spain</div>
-        <div class="star-stat" id="sg-yamal">— ⚽</div>
+        <div class="star-stat" id="sg-yamal">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#CF081F">
-        <div class="star-flag-big">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Phil_Foden_2022.jpg&width=200" alt="P. Foden" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#10 · ENG</div>
         <div class="star-name">P. Foden</div>
         <div class="star-club">England</div>
-        <div class="star-stat" id="sg-foden">— ⚽</div>
+        <div class="star-stat" id="sg-foden">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#006600">
-        <div class="star-flag-big">🇵🇹</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇵🇹</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Cristiano_Ronaldo_2018.jpg&width=200" alt="C. Ronaldo" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="star-num">#7 · POR</div>
+        <div class="star-name">C. Ronaldo</div>
+        <div class="star-club">Portugal</div>
+        <div class="star-stat" id="sg-ronaldo">0 ⚽</div>
+      </div>
+      <div class="star-card" style="--tc:#006600">
+        <div class="star-photo-wrap"><span class="star-flag-back">🇵🇹</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Bruno_Fernandes_2022.jpg&width=200" alt="B. Fernandes" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#8 · POR</div>
         <div class="star-name">B. Fernandes</div>
         <div class="star-club">Portugal</div>
-        <div class="star-stat" id="sg-bruno">— ⚽</div>
+        <div class="star-stat" id="sg-bruno">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#002868">
-        <div class="star-flag-big">🇺🇸</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🇺🇸</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Christian_Pulisic_2022.jpg&width=200" alt="C. Pulisic" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#10 · USA</div>
         <div class="star-name">C. Pulisic</div>
         <div class="star-club">USA</div>
-        <div class="star-stat" id="sg-pulisic">— ⚽</div>
-      </div>
-      <div class="star-card" style="--tc:#AA151B">
-        <div class="star-flag-big">🇪🇸</div>
-        <div class="star-num">#26 · ESP</div>
-        <div class="star-name">Pedri</div>
-        <div class="star-club">Spain</div>
-        <div class="star-stat" id="sg-pedri">— ⚽</div>
+        <div class="star-stat" id="sg-pulisic">0 ⚽</div>
       </div>
       <div class="star-card" style="--tc:#CF081F">
-        <div class="star-flag-big">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <div class="star-photo-wrap"><span class="star-flag-back">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><img class="star-photo" src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Jude_Bellingham_2022.jpg&width=200" alt="J. Bellingham" loading="lazy" onerror="this.style.display='none'"></div>
         <div class="star-num">#22 · ENG</div>
         <div class="star-name">J. Bellingham</div>
         <div class="star-club">England</div>
-        <div class="star-stat" id="sg-bellingham">— ⚽</div>
+        <div class="star-stat" id="sg-bellingham">0 ⚽</div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ── GOAL HIGHLIGHTS ── -->
+<a class="goal-highlights-bar" href="https://youtube.com/playlist?list=PLB5dkLRMn9so" target="_blank" rel="noopener" aria-label="Watch FIFA World Cup 2026 Goal Highlights on YouTube">
+  <div class="gh-inner" style="display:flex;align-items:center;gap:16px;">
+    <div class="gh-play-icon">▶</div>
+    <div class="gh-text">
+      <div class="gh-eyebrow">🎬 OFFICIAL FIFA WC2026</div>
+      <div class="gh-body">Watch Every Goal — Official FIFA YouTube Highlights</div>
+    </div>
+    <div class="gh-cta">Watch Now →</div>
+  </div>
+</a>
 
 <div class="layout">
 
@@ -946,7 +972,7 @@
     <div class="promo-banner" role="complementary" aria-label="FootSteps GPS app promotion">
       <div class="promo-title">📍 FootSteps — Trail GPS App</div>
       <div class="promo-sub">Record hikes, tracks &amp; adventures. Never lose your way back. Apple Watch support.</div>
-      <a class="promo-btn" href="https://apps.apple.com/app/footsteps" target="_blank" rel="noopener" aria-label="Download FootSteps GPS app from App Store">Download Free →</a>
+      <a class="promo-btn" href="https://apps.apple.com/pk/app/footsteps-ghost-guide/id6777197556" target="_blank" rel="noopener" aria-label="Download FootSteps GPS app from App Store">Download Free →</a>
     </div>
 
     <!-- Mini Group Standings Widget -->
@@ -1011,7 +1037,7 @@
       FIFA World Cup 2026 Live Scores &amp; Standings ·
       Data via <a href="https://worldcup26.ir" target="_blank" rel="noopener">WorldCup26.ir</a> ·
       Built by <a href="https://arslanbutt300.github.io/portfolio/" target="_blank" rel="noopener">Arslan Ahmad</a> ·
-      <a href="https://apps.apple.com/app/footsteps" target="_blank" rel="noopener">FootSteps iOS App</a>
+      <a href="https://apps.apple.com/pk/app/footsteps-ghost-guide/id6777197556" target="_blank" rel="noopener">FootSteps iOS App</a>
     </p>
   </div>
 </footer>
@@ -1512,7 +1538,7 @@ const STAR_PLAYERS = [
   { id: 'foden',      names: ['Foden','P. Foden','Phil Foden'] },
   { id: 'bruno',      names: ['B. Fernandes','Bruno Fernandes','B.Fernandes','Bruno'] },
   { id: 'pulisic',    names: ['Pulisic','C. Pulisic','Christian Pulisic'] },
-  { id: 'pedri',      names: ['Pedri','P. González','Pedri González'] },
+  { id: 'ronaldo',    names: ['C. Ronaldo','Ronaldo','Cristiano Ronaldo','CR7','C.Ronaldo'] },
   { id: 'bellingham', names: ['Bellingham','J. Bellingham','Jude Bellingham'] },
 ];
 
