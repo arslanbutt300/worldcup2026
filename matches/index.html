@@ -85,7 +85,7 @@
   .status-live { background: rgba(239,68,68,0.2); color: var(--red); }
   .status-upcoming { background: rgba(255,255,255,0.06); color: var(--text3); }
   .match-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-  .team-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .team-name { font-size: 14px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .team-name.home { text-align: right; }
   .team-name.away { text-align: left; }
   .score-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 14px; text-align: center; min-width: 70px; }

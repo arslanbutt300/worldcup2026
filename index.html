@@ -366,8 +366,8 @@
     display: grid;
     grid-template-columns: 1fr 320px;
     gap: 24px;
-    overflow-x: hidden;
   }
+  .main-col, .sidebar { min-width: 0; }
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { order: -1; }
@@ -1242,6 +1242,18 @@ function parseMatchTimeUTC(dateStr, timeStr) {
   return new Date(`${dateStr}T${String(utcH).padStart(2,'0')}:${String(min).padStart(2,'0')}:00Z`);
 }
 
+function formatTimePKT(dateStr, timeStr) {
+  if (!timeStr) return '';
+  const utc = parseMatchTimeUTC(dateStr, timeStr);
+  // PKT = UTC+5
+  const pkt = new Date(utc.getTime() + 5 * 3600000);
+  const h = pkt.getUTCHours();
+  const m = pkt.getUTCMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm} PKT`;
+}
+
 let allMatches = [];
 let currentFilter = 'all';
 let currentGroup = 'all';
@@ -1384,7 +1396,7 @@ function renderNextMatches(matches) {
   upcoming.forEach(m => {
     const today = isToday(m.date);
     html += `<div class="next-match-item">
-      <div class="next-match-date">${today ? '🔴 TODAY' : formatDate(m.date)}${m.time ? ' · ' + m.time : ''}</div>
+      <div class="next-match-date">${today ? '🔴 TODAY' : formatDate(m.date)}${m.time ? ' · ' + formatTimePKT(m.date, m.time) : ''}</div>
       <div class="next-match-teams">${flag(m.team1)} ${m.team1} vs ${m.team2} ${flag(m.team2)}</div>
       <div class="next-match-group">${m.group || 'Knockout'}</div>
       ${m.ground ? `<div class="next-match-venue">📍 ${m.ground}</div>` : ''}
