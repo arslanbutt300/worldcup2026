@@ -1447,8 +1447,9 @@ function renderTopScorers(matches) {
 
 /* ── STATS ── */
 function updateStats(matches) {
+  const TOTAL_MATCHES = 104;
   const played = matches.filter(m => m.score).length;
-  const remaining = matches.filter(m => !m.score).length;
+  const remaining = TOTAL_MATCHES - played;
   const goals = matches.filter(m => m.score).reduce((sum, m) => sum + m.score.ft[0] + m.score.ft[1], 0);
   document.getElementById('stat-played').textContent = played;
   document.getElementById('stat-goals').textContent = goals;
