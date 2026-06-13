@@ -93,6 +93,7 @@
   .score-ht { font-size: 10px; color: var(--text3); margin-top: 1px; }
   .score-vs { font-size: 13px; color: var(--text3); font-weight: 500; }
   .match-venue { margin-top: 8px; font-size: 11px; color: var(--text3); text-align: center; }
+  .match-kickoff { margin-top: 6px; font-size: 12px; color: var(--blue); font-weight: 700; text-align: center; letter-spacing: 0.02em; }
   .goals-row { margin-top: 8px; font-size: 11px; color: var(--text2); display: flex; justify-content: space-between; gap: 8px; }
   .goals-home { text-align: right; flex: 1; }
   .goals-away { text-align: left; flex: 1; }
@@ -192,6 +193,24 @@ function isToday(d) {
   return new Date(d + 'T12:00:00Z').toDateString() === new Date().toDateString();
 }
 
+function parseMatchTimeUTC(dateStr, timeStr) {
+  if (!dateStr) return new Date(Date.now() + 86400000);
+  if (!timeStr) return new Date(dateStr + 'T23:00:00Z');
+  const [h, min] = timeStr.split(':').map(Number);
+  const utcH = (h + 5) % 24;
+  return new Date(`${dateStr}T${String(utcH).padStart(2,'0')}:${String(min).padStart(2,'0')}:00Z`);
+}
+function formatTimePKT(dateStr, timeStr) {
+  if (!timeStr) return '';
+  const utc = parseMatchTimeUTC(dateStr, timeStr);
+  const pkt = new Date(utc.getTime() + 5 * 3600000);
+  const h = pkt.getUTCHours();
+  const m = pkt.getUTCMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm} PKT`;
+}
+
 function parseLocalDate(localDate) {
   if (!localDate) return { dateStr: null, timeStr: null };
   const [datePart, timePart] = localDate.split(' ');
@@ -258,8 +277,9 @@ function renderAll(matches) {
       const hasScore = m.score && m.score.ft;
       const today = isToday(m.date);
       const cls = isLive ? 'live-match' : (hasScore ? 'completed' : (today ? 'live-match' : 'upcoming'));
-      const statusLabel = isLive ? `🔴 ${m.liveMinute}'` : (hasScore ? 'FT' : (today ? 'TODAY' : (m.time || 'TBC')));
+      const statusLabel = isLive ? `🔴 ${m.liveMinute}'` : (hasScore ? 'FT' : (today ? 'TODAY' : 'KO'));
       const statusCls = isLive ? 'status-live' : (hasScore ? 'status-ft' : 'status-upcoming');
+      const kickoffTime = (!isLive && !hasScore && m.time) ? formatTimePKT(m.date, m.time) : '';
       const g1 = (m.goals1||[]).map(g => `<span class="goal-scorer">${g.name} ${g.minute}'</span>`).join('');
       const g2 = (m.goals2||[]).map(g => `<span class="goal-scorer">${g.name} ${g.minute}'</span>`).join('');
       html += `<article class="match-card ${cls}">
@@ -274,6 +294,7 @@ function renderAll(matches) {
             : `<div class="score-box"><div class="score-vs">vs</div></div>`}
           <div class="team-name away">${m.team2} ${flag(m.team2)}</div>
         </div>
+        ${kickoffTime ? `<div class="match-kickoff">🕐 ${kickoffTime}</div>` : ''}
         ${m.ground ? `<div class="match-venue">📍 ${m.ground}</div>` : ''}
         ${hasScore && (g1||g2) ? `<div class="goals-row"><div class="goals-home">${g1}</div><div class="goals-away">${g2}</div></div>` : ''}
       </article>`;

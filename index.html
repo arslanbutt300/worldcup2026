@@ -470,6 +470,7 @@
   .score-ht { font-size: 10px; color: var(--text3); margin-top: 1px; }
   .score-vs { font-size: 13px; color: var(--text3); font-weight: 500; }
   .match-venue { margin-top: 8px; font-size: 11px; color: var(--text3); text-align: center; }
+  .match-kickoff { margin-top: 6px; font-size: 12px; color: var(--blue); font-weight: 700; text-align: center; letter-spacing: 0.02em; }
   .goals-row {
     margin-top: 8px;
     font-size: 11px;
@@ -1296,6 +1297,7 @@ function renderMatches(matches) {
       </div>`;
     }
 
+    const kickoffTime = (!isLive && !hasScore && m.time) ? formatTimePKT(m.date, m.time) : '';
     html += `<article class="match-card ${cardClass}" aria-label="${m.team1} vs ${m.team2}">
       <div class="match-meta">
         <span class="match-group">${m.group || 'Knockout Stage'}</span>
@@ -1306,6 +1308,7 @@ function renderMatches(matches) {
         ${scoreHtml}
         <div class="team-name away">${m.team2} ${flag(m.team2)}</div>
       </div>
+      ${kickoffTime ? `<div class="match-kickoff">🕐 ${kickoffTime}</div>` : ''}
       ${m.ground ? `<div class="match-venue">📍 ${m.ground}</div>` : ''}
       ${goalsHtml}
     </article>`;
