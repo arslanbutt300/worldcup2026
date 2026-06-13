@@ -140,7 +140,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { overflow-x: hidden; }
+  html, body { overflow-x: hidden; }
 
   body {
     background: var(--bg);
@@ -299,9 +299,8 @@
     font-size: 14px;
     font-weight: 700;
     color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
   }
   .countdown-meta {
     font-size: 11px;
@@ -783,9 +782,10 @@
 
     /* Group filter tabs: horizontal scroll instead of ugly multi-line wrap */
     .group-tabs-row {
-      overflow-x:auto;
+      overflow-x:scroll;
       flex-wrap:nowrap;
       -webkit-overflow-scrolling:touch;
+      touch-action:pan-x;
       scrollbar-width:none;
       padding-bottom:6px;
     }
